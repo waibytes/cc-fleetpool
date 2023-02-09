@@ -13,7 +13,7 @@ const Form = ({customer, timeslot, token, hmac}) => {
     type: customer.type
   });
   const [selectedDate, setSelectedDate] = useState();
-  const [times, Times] = useState();
+  const [times, setTimes] = useState();
   const [appointmentSlot, setAppointmentSlot] = useState();
 
   Date.prototype.addDays = function(days) {
@@ -34,6 +34,12 @@ const Form = ({customer, timeslot, token, hmac}) => {
     return dates;
   }
 
+  const fetchTimeslots = async (selectedDate) => {
+    const res = await axios.get(`http://localhost:3333/${token}/${hmac}/time-slots/${selectedDate}`).catch(err=>console.log(err));
+    const data = await res.data;
+    return data;
+  }
+
   const updateEntry = async () => {
     const res = await axios.post(`http://localhost:3333/${token}/${hmac}`, {
       customer: {
@@ -48,8 +54,6 @@ const Form = ({customer, timeslot, token, hmac}) => {
       timeslot: "2022-03-03T23:00:00.000Z" // appointmentSlot
     }).catch(err=>console.log(err));
     
-
-
     const data = await res.data;
     return data;
   }
@@ -71,7 +75,8 @@ const Form = ({customer, timeslot, token, hmac}) => {
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
-
+    // fetchTimeslots(selectedDate)
+    //  .then(times=>setTimes(data.timeslots));
   }
 
   const handleTimeChange = (e) => {
@@ -159,14 +164,38 @@ const Form = ({customer, timeslot, token, hmac}) => {
               label="Termintyp"
               onChange={handleFormChange}
             >
-              <MenuItem value="exchange">Austausch</MenuItem>
-              <MenuItem value="checkout">Abgeben</MenuItem>
-              <MenuItem value="pickup">Abholen</MenuItem>
+              <MenuItem value="exchange">Tausch</MenuItem>
+              <MenuItem value="checkout">Rückgabe</MenuItem>
+              <MenuItem value="pickup">Abholung</MenuItem>
             </Select>
             </>
         }
         </FormControl>
         
+
+        {times && 
+        <>
+        <FormControl fullWidth sx={{marginTop: 2}}>
+          <InputLabel id="label-time">Zeit Auswählen</InputLabel>
+          <Select
+            labelId="label-time"
+            id="time"
+            name="time"
+            defaultValue=""
+            label="Termintyp"
+            onChange={handleTimeChange}
+          >
+          {times && times.map((time, index) => (
+            <>
+            {time.available && 
+              <MenuItem value={time.datetime}>{time.datetime}</MenuItem>
+            }
+            </>
+          ))} 
+          </Select>
+        </FormControl>
+        </>
+        }
 
         <Button type="submit" variant="contained" sx={{marginTop: 3}} color="warning">Abschicken</Button>
         </Box>
@@ -196,6 +225,8 @@ export default Form
           ))} 
           </Select>
         </FormControl>
+
+        {times 
         <FormControl fullWidth sx={{marginTop: 2}}>
           <InputLabel id="label-time">Zeit Auswählen</InputLabel>
           <Select
@@ -211,4 +242,5 @@ export default Form
           ))} 
           </Select>
         </FormControl>
+        }
 */
